@@ -117,47 +117,56 @@ function initScrollAnimations() {
 }
 
 // Contact Form Handling
+// In script.js, replace the old function with this one
+
 function initContactForm() {
     const contactForm = document.getElementById('contact-form');
     if (!contactForm) return;
     
-    contactForm.addEventListener('submit', async function(e) {
+    contactForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
         const submitBtn = this.querySelector('button[type="submit"]');
         const originalText = submitBtn.textContent;
         
         // Add loading state
-        submitBtn.classList.add('loading');
         submitBtn.textContent = 'Sending...';
         submitBtn.disabled = true;
         
-        // Get form data
-        const formData = new FormData(this);
-        const data = {
-            name: formData.get('name'),
-            email: formData.get('email'),
-            subject: formData.get('subject'),
-            message: formData.get('message')
-        };
+        const formData = new FormData(contactForm);
+        const object = {};
+        formData.forEach((value, key) => {
+            object[key] = value;
+        });
+        const json = JSON.stringify(object);
         
-        try {
-            // Simulate form submission (replace with actual endpoint)
-            await simulateFormSubmission(data);
-            
-            // Show success message
-            showMessage('Message sent successfully! I\'ll get back to you soon.', 'success');
-            this.reset();
-            
-        } catch (error) {
-            // Show error message
-            showMessage('Failed to send message. Please try again or contact me directly.', 'error');
-        } finally {
+        fetch('https://api.web3forms.com/submit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: json
+        })
+        .then(async (response) => {
+            let jsonResponse = await response.json();
+            if (response.status == 200) {
+                showMessage('Message sent successfully! I\'ll get back to you soon.', 'success');
+                contactForm.reset();
+            } else {
+                console.log(response);
+                showMessage(jsonResponse.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.log(error);
+            showMessage('Something went wrong! Please try again.', 'error');
+        })
+        .finally(() => {
             // Reset button state
-            submitBtn.classList.remove('loading');
             submitBtn.textContent = originalText;
             submitBtn.disabled = false;
-        }
+        });
     });
 }
 
