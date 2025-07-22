@@ -140,14 +140,14 @@ function initContactForm() {
         });
         const json = JSON.stringify(object);
         
-        fetch('https://api.web3forms.com/submit', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: json
-        })
+        fetch('/.netlify/functions/submit-form', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    },
+    body: json
+})
         .then(async (response) => {
             let jsonResponse = await response.json();
             if (response.status == 200) {
